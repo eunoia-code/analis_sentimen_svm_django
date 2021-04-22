@@ -1,0 +1,156 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0 text-dark">Halaman Analisis Sentimen</h1>
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active">Halaman Analisis Sentimen</li>
+          </ol>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <!-- SELECT2 EXAMPLE -->
+      <div class="card card-default">
+        <div class="card-header">
+          <h3 class="card-title">Analisis Sentimen</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+            <!-- <button type="button" class="btn btn-tool" data-card-widget="remove">
+              <i class="fas fa-times"></i>
+            </button> -->
+          </div>
+        </div>
+        <!-- /.card-header -->
+        <div class="card-body">
+          <label>Pilih Produk : </label>
+          <!-- <form id="proses_data"> -->
+            <div class="row">
+              <div class="col-md-8">
+                <div class="form-group">
+                  <select class="form-control select2" id="selectProduct" style="width: 100%;" required>
+                    <option selected="selected" disabled>--- Pilih Produk ---</option>
+                    {% for dp in data_produk %}
+                      <option value="{{dp.id}}">{{dp.nama_product}}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                
+              </div>
+              <div class="col-md-2">
+                <select class="form-control select2" id="jumlahHalaman" style="width: 100%;" required>
+                  <option selected="selected" disabled>Jumlah Halaman</option>
+                  {% for _ in '0123456789'|make_list %}
+                    <option value="{{forloop.counter}}">{{forloop.counter}}</option>
+                  {% endfor %}
+                </select>
+              </div>
+              <div class="col-md-2">
+                <button type="button" id="proses" class="btn btn-primary btn-block"> <i class="fas fa-sync"></i> &nbsp; Proses</button>
+              </div>
+            </div>
+          <!-- </form> -->
+          <!-- /.row -->
+          <div class="container-fluid">
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Data Sentimen</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div class="card-body">
+                    <table id="example2" class="table table-bordered table-hover">
+                      <thead>
+                      <tr>
+                        <th style="width:5%">No.</th>
+                        <th>Review</th>
+                        <th style="width:10%">Label</th>
+                      </tr>
+                      </thead>
+                      <tbody>
+
+                      </tbody>
+                      <tfoot>
+                      <tr>
+                        <th>No.</th>
+                        <th>Review</th>
+                        <th>Label</th>
+                      </tr>
+                      </tfoot>
+                    </table>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <!-- /.col -->
+            </div>
+            <!-- /.row -->
+          </div>
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer">
+          Sistem Analisis Sentimen Produk Pada Laman Komentar <a href="https://femaledaily.com/">Female Daily.</a>
+        </div>
+      </div>
+      <!-- /.card -->
+
+    </div>
+    <!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+
+{% endblock content %}
+
+{% block extrascripts %}
+<script>
+  $('#proses').click(() => {
+    var id = $('#selectProduct').val();
+    var jml = $('#jumlahHalaman').val();
+    id == null ? id=100 : id;
+    jml == null ? jml=1 : jml;
+
+    var url = `http://localhost:8000/getData/getDataReviews/?id=${id}&jumlah=${jml}`;
+    $.getJSON(url, success);
+      function success(data) {
+        console.log(data);
+      }
+  })
+
+
+  $(function () {
+    $("#example1").DataTable({
+      "responsive": true,
+      "autoWidth": false,
+    });
+    $('#example2').DataTable({
+      "paging": true,
+      "lengthChange": false,
+      "searching": false,
+      "ordering": true,
+      "info": true,
+      "autoWidth": false,
+      "responsive": true,
+    });
+  });
+</script>
+{% endblock extrascripts %}

@@ -123,15 +123,23 @@
         <ul class="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
           <!-- Add icons to the links using the .nav-icon class
                with font-awesome or any other icon font library -->
-          <li class="nav-item has-treeview menu-open">
-            <a href="" class="nav-link ">
+          <li class="nav-item has-treeview {% if request.get_full_path == '/home/' or request.get_full_path == '/' %} menu-open {% endif %}">
+            <a href="{% url 'home' %}" class="nav-link ">
               <i class="nav-icon fas fa-tachometer-alt"></i>
               <p>
-                Halaman Beranda               
+                Halaman Beranda
               </p>
             </a>             
           </li>
-		  <li class="nav-item has-treeview menu-open">
+          <li class="nav-item has-treeview {% if request.get_full_path == '/sentimen/' %} menu-open {% endif %}">
+            <a href="{% url 'sentimen' %}" class="nav-link ">
+              <i class="nav-icon fas fa-chart-line"></i>
+              <p>
+                Analisis Sentimen       
+              </p>
+            </a>             
+          </li>
+		  <!-- <li class="nav-item has-treeview menu-open">
             <a href="" class="nav-link ">
               <i class="nav-icon fas fa-edit"></i>
               <p>
@@ -162,7 +170,7 @@
                 Nilai Hasil SVM               
               </p>
             </a>             
-          </li>  
+          </li>   -->
             </ul>
           </li>
          
@@ -229,45 +237,34 @@ menu_id.classList.add('active');
 <!-- ChartJS -->
 <script src="/sentimen_app/static/assets/plugins/chart.js/Chart.min.js"></script>
 <!-- Sparkline -->
-<script src="/sentimen_app/static/assets/plugins/sparklines/sparkline.js"></script>
+<!-- <script src="/sentimen_app/static/assets/plugins/sparklines/sparkline.js"></script> -->
 <!-- JQVMap -->
-<script src="/sentimen_app/static/assets/plugins/jqvmap/jquery.vmap.min.js"></script>
-<script src="/sentimen_app/static/assets/plugins/jqvmap/maps/jquery.vmap.usa.js"></script>
+<!-- <script src="/sentimen_app/static/assets/plugins/jqvmap/jquery.vmap.min.js"></script> -->
+<!-- <script src="/sentimen_app/static/assets/plugins/jqvmap/maps/jquery.vmap.usa.js"></script> -->
 <!-- jQuery Knob Chart -->
-<script src="/sentimen_app/static/assets/plugins/jquery-knob/jquery.knob.min.js"></script>
+<!-- <script src="/sentimen_app/static/assets/plugins/jquery-knob/jquery.knob.min.js"></script> -->
 <!-- daterangepicker -->
-<script src="/sentimen_app/static/assets/plugins/moment/moment.min.js"></script>
-<script src="/sentimen_app/static/assets/plugins/daterangepicker/daterangepicker.js"></script>
+<!-- <script src="/sentimen_app/static/assets/plugins/moment/moment.min.js"></script> -->
+<!-- <script src="/sentimen_app/static/assets/plugins/daterangepicker/daterangepicker.js"></script> -->
 <!-- Tempusdominus Bootstrap 4 -->
-<script src="/sentimen_app/static/assets/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script>
+<!-- <script src="/sentimen_app/static/assets/plugins/tempusdominus-bootstrap-4/js/tempusdominus-bootstrap-4.min.js"></script> -->
 <!-- Summernote -->
-<script src="/sentimen_app/static/assets/plugins/summernote/summernote-bs4.min.js"></script>
+<!-- <script src="/sentimen_app/static/assets/plugins/summernote/summernote-bs4.min.js"></script> -->
 <!-- overlayScrollbars -->
-<script src="/sentimen_app/static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script>
+<!-- <script src="/sentimen_app/static/assets/plugins/overlayScrollbars/js/jquery.overlayScrollbars.min.js"></script> -->
 <!-- AdminLTE App -->
 <script src="/sentimen_app/static/assets/dist/js/adminlte.js"></script>
 <!-- AdminLTE dashboard demo (This is only for demo purposes) -->
-<script src="/sentimen_app/static/assets/dist/js/pages/dashboard.js"></script>
+<!-- <script src="/sentimen_app/static/assets/dist/js/pages/dashboard.js"></script> -->
 <!-- AdminLTE for demo purposes -->
-<script src="/sentimen_app/static/assets/dist/js/demo.js"></script>
+<!-- <script src="/sentimen_app/static/assets/dist/js/demo.js"></script> -->
 <!-- page script -->
-<script>
-  $(function () {
-    $("#example1").DataTable({
-      "responsive": true,
-      "autoWidth": false,
-    });
-    $('#example2').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": false,
-      "ordering": true,
-      "info": true,
-      "autoWidth": false,
-      "responsive": true,
-    });
-  });
-</script>
+
+{% block extrascripts %}
+    
+
+    
+{% endblock extrascripts %}
 
 </body>
 </html>

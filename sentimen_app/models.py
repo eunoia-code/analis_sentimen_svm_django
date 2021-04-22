@@ -132,6 +132,9 @@ class KataBaku(models.Model):
     tidakbaku = models.CharField(max_length=30)
     baku = models.CharField(max_length=30)
 
+    def __str__(self):
+        return self.tidakbaku+" -> "+self.baku
+
     class Meta:
         managed = False
         db_table = 'kata_baku'
@@ -142,6 +145,9 @@ class TbKatadasar(models.Model):
     katadasar = models.CharField(max_length=20)
     tipe_katadasar = models.CharField(max_length=20)
 
+    def __str__(self):
+        return self.katadasar
+
     class Meta:
         managed = False
         db_table = 'tb_katadasar'
@@ -149,6 +155,9 @@ class TbKatadasar(models.Model):
 
 class TbNormalisasi(models.Model):
     kata_dasar = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.kata_dasar
 
     class Meta:
         managed = False
@@ -169,6 +178,22 @@ class TbSentimen(models.Model):
     kata = models.CharField(max_length=30)
     sentimen = models.CharField(max_length=30)
 
+    def __str__(self):
+        return self.kata
+
     class Meta:
         managed = False
         db_table = 'tb_sentimen'
+
+class TbProduct(models.Model):
+    nama_product = models.CharField(max_length=100)
+    url = models.TextField()
+    kategori = models.CharField(max_length=50)
+
+    def __str__(self):
+        return self.nama_product
+
+    class Meta:
+        managed = False
+        ordering = ('nama_product',)
+        db_table = 'tb_product'
