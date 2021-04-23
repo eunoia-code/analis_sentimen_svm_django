@@ -74,7 +74,11 @@
                     <h3 class="card-title">Data Sentimen</h3>
                   </div>
                   <!-- /.card-header -->
-                  <div class="card-body">
+                  <div class="card-body" id="detail_produk">
+                    <div class="callout callout-info">
+                      <h5 id="nama_produk"></h5>
+                      <p id="kategori"></p>
+                    </div>
                     <div id="sentimen-table"></div>
                   </div>
                   <!-- /.card-body -->
@@ -113,16 +117,16 @@
       id == null ? id=100 : id;
       jml == null ? jml=1 : jml;
 
-      var url = `http://localhost:8000/getData/getDataReviews/?id=${id}&jumlah=${jml}`;
+      var url = `http://127.0.0.1:8000/getData/getDataReviews/?id=${id}&jumlah=${jml}`;
     
       $("#sentimen-table").jsGrid({
         height: "auto",
         width: "100%",
  
         sorting: true,
-        // paging: true,
+        paging: true,
         autoload: true,
-        // pageSize: 10,
+        pageSize: 10,
  
         controller: {
           loadData: function() {
@@ -132,12 +136,15 @@
                 url: url,
                 dataType: "json"
             }).done(function(response) {
-                d.resolve(response[0]['review'])
+                d.resolve(response)
             });
 
             return d.promise().then(x => {
+              $("#nama_produk").html(`Nama Produk : ${x[0]['nama_product']} <a href='${x[0]['url']}' target='_blank'>  <i class='fas fa-external-link-alt'></i></a>`)
+              $("#kategori").text("Kategori : "+x[0]['kategori'])
+
               var p = [];
-              $.each(x, function(i, xyz){
+              $.each(x[0]['review'], function(i, xyz){
                 p.push({No:(i+1),Review:xyz,Label:''})
               })
               return p
