@@ -45,7 +45,6 @@
               <div class="col-md-8">
                 <div class="form-group">
                   <select class="form-control select2" id="selectProduct" style="width: 100%;" required>
-                    <option selected="selected" disabled>--- Pilih Produk ---</option>
                     {% for dp in data_produk %}
                       <option value="{{dp.id}}">{{dp.nama_product}}</option>
                     {% endfor %}
@@ -76,25 +75,7 @@
                   </div>
                   <!-- /.card-header -->
                   <div class="card-body">
-                    <table id="example2" class="table table-bordered table-hover">
-                      <thead>
-                      <tr>
-                        <th style="width:5%">No.</th>
-                        <th>Review</th>
-                        <th style="width:10%">Label</th>
-                      </tr>
-                      </thead>
-                      <tbody>
-
-                      </tbody>
-                      <tfoot>
-                      <tr>
-                        <th>No.</th>
-                        <th>Review</th>
-                        <th>Label</th>
-                      </tr>
-                      </tfoot>
-                    </table>
+                    <div id="sentimen-table"></div>
                   </div>
                   <!-- /.card-body -->
                 </div>
@@ -123,33 +104,75 @@
 
 {% block extrascripts %}
 <script>
-  $('#proses').click(() => {
-    var id = $('#selectProduct').val();
-    var jml = $('#jumlahHalaman').val();
-    id == null ? id=100 : id;
-    jml == null ? jml=1 : jml;
+  $(document).ready(function () {
+    $('#proses').click(() => {
+      // $("#sentimen-table").empty();
 
-    var url = `http://localhost:8000/getData/getDataReviews/?id=${id}&jumlah=${jml}`;
-    $.getJSON(url, success);
-      function success(data) {
-        console.log(data);
-      }
-  })
+      var id = $('#selectProduct').val();
+      var jml = $('#jumlahHalaman').val();
+      id == null ? id=100 : id;
+      jml == null ? jml=1 : jml;
 
+      var url = `http://localhost:8000/getData/getDataReviews/?id=${id}&jumlah=${jml}`;
+    
+      $("#sentimen-table").jsGrid({
+        height: "auto",
+        width: "100%",
+ 
+        sorting: true,
+        // paging: true,
+        autoload: true,
+        // pageSize: 10,
+ 
+        controller: {
+          loadData: function() {
+            var d = $.Deferred();
+ 
+            $.ajax({
+                url: url,
+                dataType: "json"
+            }).done(function(response) {
+                d.resolve(response[0]['review'])
+            });
 
-  $(function () {
-    $("#example1").DataTable({
-      "responsive": true,
-      "autoWidth": false,
+            return d.promise().then(x => {
+              var p = [];
+              $.each(x, function(i, xyz){
+                p.push({No:(i+1),Review:xyz,Label:''})
+              })
+              return p
+            });
+
+          }
+        },
+ 
+        fields: [
+          { name: "No", type: "number", width: 20 },
+          { name: "Review", type: "text", width: 250 },
+          { name: "Label", type: "text", width: 30 }
+        ]
     });
-    $('#example2').DataTable({
-      "paging": true,
-      "lengthChange": false,
-      "searching": false,
-      "ordering": true,
-      "info": true,
-      "autoWidth": false,
-      "responsive": true,
+
+
+
+
+
+
+    //   setTimeout(() => {
+    //     new gridjs.Grid({
+    //       pagination: {
+    //         limit: 10
+    //       },
+    //       columns: ['No', 'Review', 'Label'],
+    //       server: {
+    //         url: url,
+    //         then: data => data[0]['review'].map((xyz,i) => [
+    //           (+i+1), xyz, gridjs.html(``)
+    //         ]),
+    //         total: data => data.count
+    //       },
+    //     }).render(document.getElementById("sentimen-table"));
+    //   },1000)
     });
   });
 </script>
