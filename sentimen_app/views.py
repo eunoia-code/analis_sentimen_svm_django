@@ -10,7 +10,7 @@ def index(request):
     kata_dasar_jumlah = TbKatadasar.objects.all().count()
     product_jumlah = TbProduct.objects.all().count()
     kata_sentimen_jumlah = TbSentimen.objects.all().count()
-
+    
     context = {
         'dl': data_latih_jumlah,
         'kd': kata_dasar_jumlah,

@@ -104,6 +104,13 @@
 </div>
 <!-- /.content-wrapper -->
 
+
+<style type="text/css">
+  tr {
+    vertical-align: top !important
+  }
+</style>
+
 {% endblock content %}
 
 {% block extrascripts %}
@@ -147,7 +154,12 @@
 
               var p = [];
               $.each(x[0]['review'], function(i, xyz){
-                p.push({No:(i+1),Review:xyz,Label:''})
+                p.push({
+                  No:(i+1),
+                  Review:xyz[0],
+                  Normalisation:xyz[1],
+                  Label:''
+                })
               })
               return p
             });
@@ -157,31 +169,12 @@
  
         fields: [
           { name: "No", type: "number", width: 20 },
-          { name: "Review", type: "text", width: 250 },
+          { name: "Review", type: "text", width: 150 },
+          { name: "Normalisation", type: "text", width: 150 },
           { name: "Label", type: "text", width: 30 }
         ]
-    });
+      });
 
-
-
-
-
-
-    //   setTimeout(() => {
-    //     new gridjs.Grid({
-    //       pagination: {
-    //         limit: 10
-    //       },
-    //       columns: ['No', 'Review', 'Label'],
-    //       server: {
-    //         url: url,
-    //         then: data => data[0]['review'].map((xyz,i) => [
-    //           (+i+1), xyz, gridjs.html(``)
-    //         ]),
-    //         total: data => data.count
-    //       },
-    //     }).render(document.getElementById("sentimen-table"));
-    //   },1000)
     });
   });
 </script>
