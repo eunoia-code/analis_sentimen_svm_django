@@ -1,17 +1,17 @@
-from django.contrib.auth.models import User, Group
+# from django.contrib.auth.models import User, Group
+import enum
 from rest_framework import serializers
-from .models import KataBaku, TbProduct
+from .models import KataBaku, TbSentimen, TbProduct
 
 import requests
 from bs4 import BeautifulSoup
 
 import numpy as np
-
-from nltk.tokenize import sent_tokenize, word_tokenize
-from nltk.corpus import stopwords
+from itertools import cycle
 
 import string
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
+from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFactory
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
     review = serializers.SerializerMethodField('getReview')
@@ -30,33 +30,27 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
             soup = BeautifulSoup(page.content, 'html.parser')
             for index, el in enumerate(soup.find_all("p", {"class": "text-content"})):
-                # if index==0:
-                if True:                    
-                    newText = self.PreprocessingFunction(el.text)
-                    review.append([el.text, newText])
-                
+                # print("Proses ke-"+str(index))
+                if index==6:
+                # if True:                    
+                    newText = self.PreprocessingFunction(el.text, jml)
+                    review.append([el.text, newText])        
 
         return review
 
-    def PreprocessingFunction(self, text):
+    def PreprocessingFunction(self, text, n):
         data = []
 
+        # preprocessing
         text = self.CaseFolding(text)
         text = self.Tokenize(text)
         text = self.StandardWord(text)
         text = self.StopwordRemoval(text)
         text = self.Stemming(text)
 
-        # Call Kata Dasar Data
-        # kataDasar = TbKatadasar.objects.all()
-        # kd_list = list(kataDasar)
-
-        # splitComment = obj.split()
-        # for word in splitComment:
-        #     for kd in kd_list:
-        #         l_distance = self.LevenshteinDistance(word, str(kd))
-        #         print(word, str(kd), l_distance, end="\n")
-        #     print("\n")
+        # tf-idf
+        query = self.CreateQuery()
+        tf = self.ComputeTF(query, text, n)
 
         return text
     
@@ -65,27 +59,26 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
     def Tokenize(self, text):
         token = text.translate(str.maketrans('','',string.punctuation)).lower()
-        return word_tokenize(token)
-
-    def StopwordRemoval(self, text):
-        listStopword =  set(stopwords.words('indonesian'))
-
-        removed = []
-        for t in text:
-            if t not in listStopword:
-                removed.append(t)
-        
-        return removed
-
+        return token.split(' ')
+    
     def StandardWord(self, text):
         kataList = KataBaku.objects.all()
         kataTidakBakuList = list(KataBaku.objects.values_list('tidakbaku', flat=True))
-
+        
         for i,j in enumerate(text):
             if str(text[i]) in kataTidakBakuList:
                 text[i] = kataList[kataTidakBakuList.index(text[i])].baku
 
         return text
+
+    def StopwordRemoval(self, text):
+        factory = StopWordRemoverFactory()
+        stopword = factory.create_stop_word_remover()
+        
+        text = ' '.join(text)
+        removed = stopword.remove(text)
+
+        return removed.split(' ')
 
     def Stemming(self, text):
         factory = StemmerFactory()
@@ -95,6 +88,37 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         katadasar = stemmer.stem(text)
         
         return katadasar    
+
+    def CreateQuery(self):
+        queryList = list(TbSentimen.objects.values_list('kata', flat=True))
+
+        return queryList
+
+    def ComputeTF(self, query, text, n):
+        tokenText = text.split(' ')
+        sentimenIndexList = list(TbSentimen.objects.values_list('sentimen', flat=True))
+        
+        dataQuery = {}
+
+        for i in query:
+            dataQuery[i] = 0
+
+        for i, j in enumerate(tokenText):
+            if i < len(tokenText)-1:
+                # print(i, j, tokenText[i+1])
+                if tokenText[i] in query:
+                    # print(tokenText[i]+" -> "+sentimenIndexList[query.index(tokenText[i])])
+                    dataQuery[tokenText[i]] += 1
+                elif tokenText[i]+" "+tokenText[i+1] in query:
+                    # print(tokenText[i]+" "+tokenText[i+1]+" -> "+sentimenIndexList[query.index(tokenText[i]+" "+tokenText[i+1])])
+                    dataQuery[tokenText[i]+" "+tokenText[i+1]] += 1
+
+        tf_document = {}
+        for i in dataQuery:
+            # tf_document[i] = 
+            print(i, dataQuery[i])
+
+        return dataQuery
 
     def LevenshteinDistance(self, s, t):
         rows = len(s)+1
