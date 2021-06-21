@@ -1,5 +1,4 @@
 # from django.contrib.auth.models import User, Group
-import enum
 from rest_framework import serializers
 from .models import KataBaku, TbSentimen, TbProduct
 
@@ -7,7 +6,7 @@ import requests
 from bs4 import BeautifulSoup
 
 import numpy as np
-from itertools import cycle
+import math
 
 import string
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
@@ -15,42 +14,60 @@ from Sastrawi.StopWordRemover.StopWordRemoverFactory import StopWordRemoverFacto
 
 class ProductSerializer(serializers.HyperlinkedModelSerializer):
     review = serializers.SerializerMethodField('getReview')
-    # norm = serializers.SerializerMethodField('getNorm')
 
     def getReview(self, instance):
         url = instance.url
         url = url[:-1]
         request_object = self.context['request']
         jml = request_object.query_params.get('jumlah')
-        
+        # n = int(jml)
+        n = 3
+
+        query = self.CreateQuery()
         review = []
+        tf = []
+        df = []
+        idf = []
+        tfidf = []
 
         for i in range(int(jml)):
             page = requests.get(url+""+str(i+1))
 
             soup = BeautifulSoup(page.content, 'html.parser')
+
             for index, el in enumerate(soup.find_all("p", {"class": "text-content"})):
-                # print("Proses ke-"+str(index))
-                if index==6:
-                # if True:                    
-                    newText = self.PreprocessingFunction(el.text, jml)
-                    review.append([el.text, newText])        
+                if index < n:                    
+                    print("Proses ke-"+str(index))
+                    
+                    newText = self.PreprocessingFunction(el.text)
 
-        return review
+                    review.append([el.text, newText])
 
-    def PreprocessingFunction(self, text, n):
-        data = []
+                    calcTF = self.ComputeTF(query, newText)
+                    
+                    tf.append(calcTF)
 
+        df = self.ComputeDF(query, tf, n)
+        idf = self.ComputeIDF(query, df, n)
+        tfidf = self.ComputeTFIDF(tf, idf, n)
+
+        print(tfidf)
+
+        return {
+            'comment': review,
+            # 'tf': tf,
+            # 'df': df,
+            # 'idf': idf,
+            # 'tfidf': tfidf
+        }
+
+    def PreprocessingFunction(self, text):
         # preprocessing
         text = self.CaseFolding(text)
         text = self.Tokenize(text)
         text = self.StandardWord(text)
         text = self.StopwordRemoval(text)
         text = self.Stemming(text)
-
-        # tf-idf
-        query = self.CreateQuery()
-        tf = self.ComputeTF(query, text, n)
 
         return text
     
@@ -94,16 +111,16 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
         return queryList
 
-    def ComputeTF(self, query, text, n):
+    def ComputeTF(self, query, text):
         tokenText = text.split(' ')
-        sentimenIndexList = list(TbSentimen.objects.values_list('sentimen', flat=True))
+        # sentimenIndexList = list(TbSentimen.objects.values_list('sentimen', flat=True))
         
         dataQuery = {}
 
         for i in query:
             dataQuery[i] = 0
 
-        for i, j in enumerate(tokenText):
+        for i in range(len(tokenText)):
             if i < len(tokenText)-1:
                 # print(i, j, tokenText[i+1])
                 if tokenText[i] in query:
@@ -113,12 +130,47 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                     # print(tokenText[i]+" "+tokenText[i+1]+" -> "+sentimenIndexList[query.index(tokenText[i]+" "+tokenText[i+1])])
                     dataQuery[tokenText[i]+" "+tokenText[i+1]] += 1
 
-        tf_document = {}
-        for i in dataQuery:
-            # tf_document[i] = 
-            print(i, dataQuery[i])
-
         return dataQuery
+
+    def ComputeDF(self, query, tf, n):
+        df = {}
+        for i in query:
+            df[i] = 0
+
+        doc_total = [0 for i in range(n)]
+
+        for i in range(len(df)):
+            for k in range(len(doc_total)):
+                if tf[k][query[i]]>0:
+                    df[query[i]] += 1
+                
+        return df
+
+    def ComputeIDF(self, query, df, n):
+        idf = {}
+        for i in query:
+            if df[i]!=0:
+                idf[i] = math.log10(n/int(df[i]))
+            else:
+                idf[i] = 0
+                
+        return idf
+    
+    def ComputeTFIDF(self, tf, idf, n):
+        tfidf = []
+
+        for i in range(len(tf)):
+            # temp_W = {}
+            temp_W = []
+            for j in tf[i]:
+                # print(i, j, tf[i][j], idf[j])
+                # temp_W[j] = tf[i][j] * idf[j]
+                temp_W.append(tf[i][j] * idf[j])
+            
+            # tfidf.append(temp_W)
+            tfidf.append(temp_W)
+
+        return tfidf
 
     def LevenshteinDistance(self, s, t):
         rows = len(s)+1

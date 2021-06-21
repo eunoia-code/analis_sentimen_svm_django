@@ -153,7 +153,7 @@
               $("#kategori").text("Kategori : "+x[0]['kategori'])
 
               var p = [];
-              $.each(x[0]['review'], function(i, xyz){
+              $.each(x[0]['review']['comment'], function(i, xyz){
                 p.push({
                   No:(i+1),
                   Review:xyz[0],
