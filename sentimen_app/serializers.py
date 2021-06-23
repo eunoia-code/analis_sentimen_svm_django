@@ -1,4 +1,6 @@
 # from django.contrib.auth.models import User, Group
+from typing import ChainMap
+from django.db.models import query
 from rest_framework import serializers
 from .models import KataBaku, TbSentimen, TbProduct
 
@@ -7,6 +9,7 @@ from bs4 import BeautifulSoup
 
 import numpy as np
 import math
+from sklearn import preprocessing
 
 import string
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
@@ -24,6 +27,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         n = 3
 
         query = self.CreateQuery()
+
         review = []
         tf = []
         df = []
@@ -51,11 +55,12 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         idf = self.ComputeIDF(query, df, n)
         tfidf = self.ComputeTFIDF(tf, idf, n)
 
-        print(tfidf)
+        # print(tfidf)
 
         return {
             'comment': review,
-            # 'tf': tf,
+            # 'query': query,
+            'tf': tf,
             # 'df': df,
             # 'idf': idf,
             # 'tfidf': tfidf
@@ -107,52 +112,57 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         return katadasar    
 
     def CreateQuery(self):
-        queryList = list(TbSentimen.objects.values_list('kata', flat=True))
+        queryList = TbSentimen.objects.values_list('kata', 'sentimen')
 
         return queryList
 
     def ComputeTF(self, query, text):
         tokenText = text.split(' ')
-        # sentimenIndexList = list(TbSentimen.objects.values_list('sentimen', flat=True))
         
         dataQuery = {}
+        xquery = [x[0] for x in query]
 
         for i in query:
-            dataQuery[i] = 0
+            dataQuery[i[0]] = 0
 
         for i in range(len(tokenText)):
+            check = False
             if i < len(tokenText)-1:
-                # print(i, j, tokenText[i+1])
-                if tokenText[i] in query:
-                    # print(tokenText[i]+" -> "+sentimenIndexList[query.index(tokenText[i])])
-                    dataQuery[tokenText[i]] += 1
-                elif tokenText[i]+" "+tokenText[i+1] in query:
-                    # print(tokenText[i]+" "+tokenText[i+1]+" -> "+sentimenIndexList[query.index(tokenText[i]+" "+tokenText[i+1])])
+                if tokenText[i]+" "+tokenText[i+1] in xquery:
                     dataQuery[tokenText[i]+" "+tokenText[i+1]] += 1
+                    check = True
+            
+            if check == False:
+                if tokenText[i] in xquery:
+                    dataQuery[tokenText[i]] += 1
+                check = False
 
         return dataQuery
 
     def ComputeDF(self, query, tf, n):
         df = {}
         for i in query:
-            df[i] = 0
+            df[i[0]] = 0
 
         doc_total = [0 for i in range(n)]
 
         for i in range(len(df)):
             for k in range(len(doc_total)):
-                if tf[k][query[i]]>0:
-                    df[query[i]] += 1
+                # print(tf[k][query[i][0]])
+                if tf[k][query[i][0]]>0:
+                    df[query[i][0]] += 1
                 
         return df
 
     def ComputeIDF(self, query, df, n):
         idf = {}
+        # xquery = [x[0] for x in query]
+
         for i in query:
-            if df[i]!=0:
-                idf[i] = math.log10(n/int(df[i]))
+            if df[i[0]]!=0:
+                idf[i[0]] = math.log10(n/int(df[i[0]]))
             else:
-                idf[i] = 0
+                idf[i[0]] = 0
                 
         return idf
     

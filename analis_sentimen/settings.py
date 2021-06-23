@@ -83,7 +83,7 @@ WSGI_APPLICATION = 'analis_sentimen.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'db_sentimen',
+        'NAME': 'db_analis_sentime',
         'USER': 'root',
         'PASSWORD': '',
         'HOST': 'localhost'
