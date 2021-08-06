@@ -1,4 +1,5 @@
 # from django.contrib.auth.models import User, Group
+import enum
 from typing import ChainMap
 from django.db.models import query
 from rest_framework import serializers
@@ -8,8 +9,13 @@ import requests
 from bs4 import BeautifulSoup
 
 import numpy as np
+import pandas as pd
 import math
+
 from sklearn import preprocessing
+from sklearn.svm import SVC
+from sklearn.metrics import accuracy_score
+from sklearn.model_selection import train_test_split
 
 import string
 from Sastrawi.Stemmer.StemmerFactory import StemmerFactory
@@ -24,11 +30,12 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         request_object = self.context['request']
         jml = request_object.query_params.get('jumlah')
         # n = int(jml)
-        n = 3
+        n = 5
 
         query = self.CreateQuery()
 
         review = []
+        sentimen = []
         tf = []
         df = []
         idf = []
@@ -45,25 +52,30 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                     
                     newText = self.PreprocessingFunction(el.text)
 
-                    review.append([el.text, newText])
+                    review.append([el.text, newText, ])
 
-                    calcTF = self.ComputeTF(query, newText)
+                    TFS = self.ComputeTF(query, newText)
                     
-                    tf.append(calcTF)
+                    tf.append(TFS[0])
+                    sentimen.append(TFS[1])
 
         df = self.ComputeDF(query, tf, n)
         idf = self.ComputeIDF(query, df, n)
-        tfidf = self.ComputeTFIDF(tf, idf, n)
+        tfidf = self.ComputeTFIDF(tf, idf)
 
-        # print(tfidf)
+        prepare_data = self.PrepareData(query, tfidf, sentimen)
+        training_data = self.TrainingData(prepare_data)
 
         return {
             'comment': review,
+            'sentimen': sentimen,
             # 'query': query,
-            'tf': tf,
+            # 'tf': tf,
             # 'df': df,
             # 'idf': idf,
-            # 'tfidf': tfidf
+            # 'tfidf': tfidf,
+            # 'prepare_data': prepare_data,
+            'training_data': training_data
         }
 
     def PreprocessingFunction(self, text):
@@ -120,24 +132,38 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         tokenText = text.split(' ')
         
         dataQuery = {}
+        dataSentimen = {}
+
         xquery = [x[0] for x in query]
+
+        sentimen = {
+            'positif': 0,
+            'negatif': 0
+        }
 
         for i in query:
             dataQuery[i[0]] = 0
+            dataSentimen[i[0]] = i[1]
 
         for i in range(len(tokenText)):
             check = False
+            newToken = ''
+
             if i < len(tokenText)-1:
-                if tokenText[i]+" "+tokenText[i+1] in xquery:
-                    dataQuery[tokenText[i]+" "+tokenText[i+1]] += 1
+                newToken = tokenText[i]+" "+tokenText[i+1]
+                if newToken in xquery:
+                    dataQuery[newToken] += 1
+                    sentimen[dataSentimen[newToken]] += 1
                     check = True
             
-            if check == False:
-                if tokenText[i] in xquery:
-                    dataQuery[tokenText[i]] += 1
-                check = False
+            if not check:
+                newToken = tokenText[i]
+                if newToken in xquery:
+                    dataQuery[newToken] += 1
+                    sentimen[dataSentimen[newToken]] += 1
+                check = True
 
-        return dataQuery
+        return [dataQuery, sentimen]
 
     def ComputeDF(self, query, tf, n):
         df = {}
@@ -166,7 +192,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                 
         return idf
     
-    def ComputeTFIDF(self, tf, idf, n):
+    def ComputeTFIDF(self, tf, idf):
         tfidf = []
 
         for i in range(len(tf)):
@@ -181,6 +207,54 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             tfidf.append(temp_W)
 
         return tfidf
+
+    def PrepareData(self, query, tfidf, sentimen):
+        data = []
+        
+        index = 0
+        for val in tfidf:
+            temp = {}
+            temp.update({'index' : index})
+
+            for i, j in enumerate(val):
+                # print(i,j, query[i][0])
+                temp.update({query[i][0] : j})
+        
+            if sentimen[index]['positif'] >= sentimen[index]['negatif']:
+                temp.update({'label' : 1})
+            else:
+                temp.update({'label' : 0})
+
+            data.append(temp)
+
+            index+=1
+
+        return data
+
+    def TrainingData(self, data):
+        df = pd.DataFrame(data)
+        X = df.drop(['index', 'label'], axis=1)
+        y = df['label']
+        idx = df['index']
+
+        X_train, X_test, y_train, y_test, idx_train, idx_test = train_test_split(X, y, idx, test_size = 0.20)
+
+        svclassifier = SVC(kernel='linear')
+        
+        svclassifier.fit(X_train, y_train)
+
+        y_pred = svclassifier.predict(X_test)
+
+        X_combined = np.r_[X_train, X_test]
+        y_combined = np.r_[y_train, y_pred]
+        idx_combined = np.r_[idx_train, idx_test]
+
+        classifier = []
+
+        for i, j in enumerate(idx_combined):
+            classifier.append({'class': j, 'value': y_combined[i]})
+
+        return classifier
 
     def LevenshteinDistance(self, s, t):
         rows = len(s)+1

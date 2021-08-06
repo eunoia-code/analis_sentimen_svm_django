@@ -153,12 +153,23 @@
               $("#kategori").text("Kategori : "+x[0]['kategori'])
 
               var p = [];
+              labels = x[0]['review']['training_data'];
+
+              labels.sort(function(a, b) {
+                var keyA = new Date(a.class)
+                var keyB = new Date(b.class)
+
+                if (keyA < keyB) return -1;
+                if (keyA > keyB) return 1;
+                return 0;
+              });
+
               $.each(x[0]['review']['comment'], function(i, xyz){
                 p.push({
-                  No:(i+1),
-                  Review:xyz[0],
-                  Normalisation:xyz[1],
-                  Label:''
+                  No: (i+1),
+                  Review: xyz[0],
+                  Normalisation: xyz[1],
+                  Label: labels[i]['value'] ? 'Positif' : 'Negatif'
                 })
               })
               return p
