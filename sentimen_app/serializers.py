@@ -1,7 +1,4 @@
 # from django.contrib.auth.models import User, Group
-import enum
-from typing import ChainMap
-from django.db.models import query
 from rest_framework import serializers
 from .models import KataBaku, TbSentimen, TbProduct
 
@@ -29,8 +26,8 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         url = url[:-1]
         request_object = self.context['request']
         jml = request_object.query_params.get('jumlah')
-        # n = int(jml)
-        n = 5
+        n = int(jml)*10
+        # n = 5
 
         query = self.CreateQuery()
 
