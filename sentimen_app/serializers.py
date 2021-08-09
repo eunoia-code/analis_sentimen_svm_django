@@ -247,9 +247,13 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         idx_combined = np.r_[idx_train, idx_test]
 
         classifier = []
-
+        print(idx_train)
         for i, j in enumerate(idx_combined):
-            classifier.append({'class': j, 'value': y_combined[i]})
+            classifier.append({
+                'index': j, 
+                'class': y_combined[i], 
+                "type": 'train' if j in idx_train else 'test'
+            })
 
         return classifier
 
