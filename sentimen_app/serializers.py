@@ -67,7 +67,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             'comment': review,
             'sentimen': sentimen,
             # 'query': query,
-            # 'tf': tf,
+            'tf': tf,
             # 'df': df,
             # 'idf': idf,
             # 'tfidf': tfidf,
@@ -142,9 +142,13 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             dataQuery[i[0]] = 0
             dataSentimen[i[0]] = i[1]
 
+        check = False
         for i in range(len(tokenText)):
-            check = False
             newToken = ''
+
+            if check:
+                check = False
+                continue
 
             if i < len(tokenText)-1:
                 newToken = tokenText[i]+" "+tokenText[i+1]
@@ -152,6 +156,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                     dataQuery[newToken] += 1
                     sentimen[dataSentimen[newToken]] += 1
                     check = True
+                    i+=1
             
             if not check:
                 newToken = tokenText[i]
@@ -247,7 +252,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
         idx_combined = np.r_[idx_train, idx_test]
 
         classifier = []
-        print(idx_train)
+
         for i, j in enumerate(idx_combined):
             classifier.append({
                 'index': j, 
@@ -255,7 +260,12 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
                 "type": 'train' if j in idx_train else 'test'
             })
 
+        classifier = sorted(classifier, key = lambda i: i['index'])
+        
         return classifier
+
+    def sortList(e):
+        return e['index']
 
     def LevenshteinDistance(self, s, t):
         rows = len(s)+1
