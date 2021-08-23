@@ -44,15 +44,15 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             soup = BeautifulSoup(page.content, 'html.parser')
 
             for index, el in enumerate(soup.find_all("p", {"class": "text-content"})):
-                if index < n:                    
+                if index < n:
                     print("Proses ke-"+str(index))
                     
                     newText = self.PreprocessingFunction(el.text)
 
                     review.append([el.text, newText, ])
 
-                    TFS = self.ComputeTF(query, newText)
-                    
+                    TFS = self.ComputeTF(query, newText, index)
+
                     tf.append(TFS[0])
                     sentimen.append(TFS[1])
 
@@ -72,7 +72,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             # 'idf': idf,
             # 'tfidf': tfidf,
             # 'prepare_data': prepare_data,
-            'training_data': training_data
+            # 'training_data': training_data
         }
 
     def PreprocessingFunction(self, text):
@@ -125,7 +125,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
         return queryList
 
-    def ComputeTF(self, query, text):
+    def ComputeTF(self, query, text, index):
         tokenText = text.split(' ')
         
         dataQuery = {}
@@ -149,21 +149,25 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
             if check:
                 check = False
                 continue
-
+            
             if i < len(tokenText)-1:
                 newToken = tokenText[i]+" "+tokenText[i+1]
                 if newToken in xquery:
+                    if index==1:
+                        print(newToken)
                     dataQuery[newToken] += 1
                     sentimen[dataSentimen[newToken]] += 1
                     check = True
                     i+=1
-            
+
             if not check:
                 newToken = tokenText[i]
                 if newToken in xquery:
                     dataQuery[newToken] += 1
                     sentimen[dataSentimen[newToken]] += 1
-                check = True
+
+            if index==1:
+                print(newToken)
 
         return [dataQuery, sentimen]
 
