@@ -141,6 +141,14 @@
               </p>
             </a>             
           </li>
+          <li class="nav-item has-treeview {% if request.get_full_path == '/sentimen_manual/' %} menu-open {% endif %}">
+            <a href="{% url 'sentimen_manual' %}" class="nav-link ">
+              <i class="nav-icon fas fa-chart-area"></i>
+              <p>
+                Sentimen Manual       
+              </p>
+            </a>             
+          </li>
 		  <!-- <li class="nav-item has-treeview menu-open">
             <a href="" class="nav-link ">
               <i class="nav-icon fas fa-edit"></i>

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% block content %}
+
+<!-- Content Wrapper. Contains page content -->
+<div class="content-wrapper">
+  <!-- Content Header (Page header) -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0 text-dark">Halaman Analisis Sentimen</h1>
+        </div><!-- /.col -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item active">Halaman Analisis Sentimen</li>
+          </ol>
+        </div><!-- /.col -->
+      </div><!-- /.row -->
+    </div><!-- /.container-fluid -->
+  </div>
+  <!-- /.content-header -->
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      <!-- SELECT2 EXAMPLE -->
+      <div class="card card-default">
+        <div class="card-header">
+          <h3 class="card-title">Analisis Sentimen</h3>
+
+          <div class="card-tools">
+            <button type="button" class="btn btn-tool" data-card-widget="collapse">
+              <i class="fas fa-minus"></i>
+            </button>
+            <!-- <button type="button" class="btn btn-tool" data-card-widget="remove">
+              <i class="fas fa-times"></i>
+            </button> -->
+          </div>
+        </div>
+        <!-- /.card-header -->
+        {{data}}
+        <div class="card-body">
+          <label>Unggah Data : </label>
+          <form method="POST" enctype="multipart/form-data" id="submitForm">
+            {% csrf_token %}
+            <div class="row">
+              <div class="input-group">
+                <div class="custom-file">
+                  <input type="file" class="custom-file-input" id="dataSheet" name="dataSheet" accept=".csv">
+                  <label class="custom-file-label" for="exampleInputFile">Pilih Data</label>
+                </div>
+                <div class="input-group-append">
+                  <button type="submit" id="proses" class="input-group-text bg-primary">Unggah</button>
+                </div>
+              </div>
+            </div>
+          </form>
+          <!-- /.row -->
+          {% if status %}
+          <br>
+          <div class="container-fluid" id="table-proses">
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Data Sentimen</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div class="card-body" id="detail_produk">
+                    <!-- <div class="callout callout-info">
+                      <h5 id="nama_produk"></h5>
+                      <p id="kategori"></p>
+                    </div> -->
+                    <div id="sentimen-table"></div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <!-- /.col -->
+            </div>
+            <!-- /.row -->
+          </div>
+          {% endif %}
+        </div>
+        <!-- /.card-body -->
+        <div class="card-footer">
+          Sistem Analisis Sentimen Produk Pada Laman Komentar <a href="https://femaledaily.com/">Female Daily.</a>
+        </div>
+      </div>
+      <!-- /.card -->
+
+    </div>
+    <!-- /.container-fluid -->
+  </section>
+  <!-- /.content -->
+</div>
+<!-- /.content-wrapper -->
+{{ comment|json_script:"comment-data" }}
+{{ label|json_script:"label-data" }}
+
+<style type="text/css">
+  tr {
+    vertical-align: top !important
+  }
+</style>
+
+{% endblock content %}
+
+{% block extrascripts %}
+
+<script>
+  var comment = JSON.parse(document.getElementById('comment-data').textContent);
+  console.log(comment);
+  var label = JSON.parse(document.getElementById('label-data').textContent);
+  console.log(label);
+  
+  var status = "{{status|safe}}";
+  
+  if(status){
+    console.log("create table");
+    var clients = [];
+
+    for (let index = 0; index < comment.length; index++) {
+      clients.push({
+        "No": index+1, 
+        "Review": comment[index][0], 
+        "Normalisation": comment[index][0], 
+        "Label": label[index]['class']==1 ? 'Positif' : 'Negatif' })
+    }
+
+
+
+    $("#sentimen-table").jsGrid({
+      width: "100%",
+      height: "auto",
+
+      sorting: true,
+      paging: true,
+
+      data: clients,
+
+      fields: [
+          { name: "No", type: "number", width: 20 },
+          { name: "Review", type: "text", width: 150 },
+          { name: "Normalisation", type: "text", width: 150 },
+          { name: "Label", type: "text", width: 30 }
+      ]
+    });
+  };
+  
+
+  $(document).ready(function () {
+    $(".custom-file-input").on("change", function() {
+      var fileName = $(this).val().split("\\").pop();
+      $(this).siblings(".custom-file-label").addClass("selected").html(fileName);
+      console.log(fileName);
+    });
+
+  });
+</script>
+{% endblock extrascripts %}

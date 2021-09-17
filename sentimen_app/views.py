@@ -1,8 +1,13 @@
 from django.shortcuts import render
-from .models import DataLat, KataBaku, TbKatadasar, TbNormalisasi, TbPreprocessing, TbSentimen, TbProduct
+from .models import DataLat, TbKatadasar, TbSentimen, TbProduct
 from .serializers import ProductSerializer
-from rest_framework import routers, serializers, viewsets, generics
+from .the_function import the_function
+
+from rest_framework import viewsets
 from django_filters.rest_framework import DjangoFilterBackend
+from django.core.files.storage import FileSystemStorage
+
+from json import dumps
 
 # Create your views here.
 def index(request):
@@ -28,6 +33,33 @@ def sentimen(request):
     }
 
     return render(request, 'sentimen.html', context)
+
+def sentimen_manual(request):
+    if request.method == 'POST' and request.FILES['dataSheet']:
+        myfile = request.FILES['dataSheet']
+        fs = FileSystemStorage()
+        filename = fs.save(myfile.name, myfile)
+        uploaded_file_url = fs.url(filename)
+        print('Filename: ', uploaded_file_url)
+        
+        data = the_function(uploaded_file_url)
+        
+        context = {
+            'status': True,
+            'comment' : data['comment'],
+            # 'sentimen': data['sentimen'],
+            # 'query': data['query'],
+            # 'tf': data['tf'],
+            # 'df': data['df'],
+            # 'idf': data['idf'],
+            # 'tfidf': data['tfidf'],
+            # 'prepare_data': data['prepare_data'],
+            'label': data['training_data']
+        }
+
+        return render(request, 'sentimen_manual.html', context)
+
+    return render(request, 'sentimen_manual.html')
 
 class getDataReviews(viewsets.ModelViewSet):
     queryset = TbProduct.objects.all()
