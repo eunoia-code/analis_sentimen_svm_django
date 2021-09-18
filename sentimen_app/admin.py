@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import DataLat, KataBaku, TbKatadasar, TbNormalisasi, TbPreprocessing, TbSentimen, TbProduct
+from .models import DataLat, KataBaku, TbKatadasar, TbNormalisasi, TbPreprocessing, TbSentimen, TbProduct, TbData
 from import_export.admin import ImportExportActionModelAdmin
 
 # Register your models here.
@@ -32,3 +32,8 @@ class TbProductClass(ImportExportActionModelAdmin):
     search_fields = ('nama_product', )
     pass
 admin.site.register(TbProduct, TbProductClass)
+
+class TbDataClass(ImportExportActionModelAdmin):
+    search_fields = ('review', )
+    pass
+admin.site.register(TbData, TbDataClass)

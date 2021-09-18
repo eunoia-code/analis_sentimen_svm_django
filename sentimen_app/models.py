@@ -174,6 +174,20 @@ class TbPreprocessing(models.Model):
         db_table = 'tb_preprocessing'
 
 
+class TbData(models.Model):
+    review = models.TextField()
+    normalisation = models.TextField()
+    choices = (
+        ('1', 'Positif'),
+        ('0', 'Negatif')
+    )
+    label = models.CharField(max_length=1, choices=choices)
+
+    class Meta:
+        managed = False
+        db_table = 'tb_data'
+
+
 class TbSentimen(models.Model):
     kata = models.CharField(max_length=30)
     sentimen = models.CharField(max_length=30)
