@@ -1,6 +1,6 @@
 # from django.contrib.auth.models import User, Group
 from rest_framework import serializers
-from .models import KataBaku, TbSentimen, TbProduct
+from .models import KataBaku, TbSentimen, TbProduct, TbData
 
 import requests
 from bs4 import BeautifulSoup
@@ -51,23 +51,23 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
                     review.append([el.text, newText, ])
 
-                    TFS = self.ComputeTF(query, newText, index)
+                    # TFS = self.ComputeTF(query, newText, index)
 
-                    tf.append(TFS[0])
-                    sentimen.append(TFS[1])
+                    # tf.append(TFS[0])
+                    # sentimen.append(TFS[1])
 
-        df = self.ComputeDF(query, tf, n)
-        idf = self.ComputeIDF(query, df, n)
-        tfidf = self.ComputeTFIDF(tf, idf)
+        # df = self.ComputeDF(query, tf, n)
+        # idf = self.ComputeIDF(query, df, n)
+        # tfidf = self.ComputeTFIDF(tf, idf)
 
-        prepare_data = self.PrepareData(query, tfidf, sentimen)
-        training_data = self.TrainingData(prepare_data)
+        # prepare_data = self.PrepareData(query, tfidf, sentimen)
+        # training_data = self.TrainingData(prepare_data)
 
         return {
             'comment': review,
-            'sentimen': sentimen,
+            # 'sentimen': sentimen,
             # 'query': query,
-            'tf': tf,
+            # 'tf': tf,
             # 'df': df,
             # 'idf': idf,
             # 'tfidf': tfidf,
@@ -305,3 +305,16 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = TbProduct
         fields = ['id', 'nama_product', 'url', 'kategori', 'review']
+
+
+class LabelSerializer(serializers.ModelSerializer):
+    # review = serializers.CharField(max_length=9999)
+    # normalisation = serializers.CharField(max_length=9999)
+    # label = serializers.CharField(max_length=1)
+
+    class Meta:
+        model = TbData
+        fields = '__all__'
+
+    def create(self, validated_data):
+        return TbData.objects.create(**validated_data)

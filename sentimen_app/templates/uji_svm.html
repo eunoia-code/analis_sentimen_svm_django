@@ -8,12 +8,12 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1 class="m-0 text-dark">Halaman Scrapping Data</h1>
+          <h1 class="m-0 text-dark">Uji Support Vector Machine</h1>
         </div><!-- /.col -->
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
             <li class="breadcrumb-item"><a href="/">Home</a></li>
-            <li class="breadcrumb-item active">Halaman Scrapping Data</li>
+            <li class="breadcrumb-item active">Halaman Uji Support Vector Machine</li>
           </ol>
         </div><!-- /.col -->
       </div><!-- /.row -->
@@ -26,7 +26,7 @@
       <!-- SELECT2 EXAMPLE -->
       <div class="card card-default">
         <div class="card-header">
-          <h3 class="card-title">Scrapping Data</h3>
+          <h3 class="card-title">Uji Support Vector Machine</h3>
 
           <div class="card-tools">
             <button type="button" class="btn btn-tool" data-card-widget="collapse">
@@ -39,65 +39,14 @@
         </div>
         <!-- /.card-header -->
         <div class="card-body">
-          <label>Pilih Produk : </label>
-          <!-- <form id="proses_data"> -->
-            <div class="row">
-              <div class="col-md-8">
-                <div class="form-group">
-                  <select class="form-control select2" id="selectProduct" style="width: 100%;" required>
-                    {% for dp in data_produk %}
-                      <option value="{{dp.id}}">{{dp.nama_product}}</option>
-                    {% endfor %}
-                  </select>
-                </div>
-                
-              </div>
-              <div class="col-md-2">
-                <select class="form-control select2" id="jumlahHalaman" style="width: 100%;" required>
-                  <option selected="selected" disabled>Jumlah Halaman</option>
-                  {% for _ in '0123456789'|make_list %}
-                    <option value="{{forloop.counter}}">{{forloop.counter}}</option>
-                  {% endfor %}
-                </select>
-              </div>
-              <div class="col-md-2">
-                <button type="button" id="proses" class="btn btn-primary btn-block"> <i class="fas fa-sync"></i> &nbsp; Proses</button>
-              </div>
-            </div>
-          <!-- </form> -->
-          <!-- /.row -->
-          <div class="container-fluid" id="table-proses">
-            <div class="row">
-              <div class="col-12">
-                <div class="card">
-                  <div class="card-header">
-                    <div class="d-flex bd-highlight">
-                      <div class="p-2 flex-grow-1 bd-highlight">
-                        <h3 class="card-title">Data Komentar</h3>
-                      </div>
-                      <div class="p-2 bd-highlight">
-                        <button class="btn btn-sm btn-secondary" id="simpan_data">
-                          <i class="fas fa-plus"></i> Simpan Data
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                  <!-- /.card-header -->
-                  <div class="card-body" id="detail_produk">
-                    <div class="callout callout-info">
-                      <h5 id="nama_produk"></h5>
-                      <p id="kategori"></p>
-                    </div>
-                    <div id="sentimen-table"></div>
-                  </div>
-                  <!-- /.card-body -->
-                </div>
-                <!-- /.card -->
-              </div>
-              <!-- /.col -->
-            </div>
-            <!-- /.row -->
-          </div>
+          {% for d in data %}
+            <pre>
+              {{d.index_number}} <br>
+              {{d.review}} <br>
+              {{d.normalisation}} <br>
+              {{d.label}}
+            </pre>
+          {% endfor %}
         </div>
         <!-- /.card-body -->
         <div class="card-footer">

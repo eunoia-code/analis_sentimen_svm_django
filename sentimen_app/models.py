@@ -182,6 +182,7 @@ class TbData(models.Model):
         ('0', 'Negatif')
     )
     label = models.CharField(max_length=1, choices=choices)
+    index_number = models.CharField(max_length=3)
 
     class Meta:
         managed = False
