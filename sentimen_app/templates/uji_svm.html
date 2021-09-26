@@ -39,14 +39,29 @@
         </div>
         <!-- /.card-header -->
         <div class="card-body">
-          {% for d in data %}
-            <pre>
-              {{d.index_number}} <br>
-              {{d.review}} <br>
-              {{d.normalisation}} <br>
-              {{d.label}}
-            </pre>
-          {% endfor %}
+          <div class="container-fluid" id="table-proses">
+            <div class="row">
+              <div class="col-12">
+                <div class="card">
+                  <div class="card-header">
+                    <h3 class="card-title">Data Sentimen</h3>
+                  </div>
+                  <!-- /.card-header -->
+                  <div class="card-body" id="detail_produk">
+                    <!-- <div class="callout callout-info">
+                      <h5 id="nama_produk"></h5>
+                      <p id="kategori"></p>
+                    </div> -->
+                    <div id="sentimen-table"></div>
+                  </div>
+                  <!-- /.card-body -->
+                </div>
+                <!-- /.card -->
+              </div>
+              <!-- /.col -->
+            </div>
+            <!-- /.row -->
+          </div>
         </div>
         <!-- /.card-body -->
         <div class="card-footer">
@@ -61,7 +76,8 @@
   <!-- /.content -->
 </div>
 <!-- /.content-wrapper -->
-
+{{ comment|json_script:"comment-data" }}
+{{ label|json_script:"label-data" }}
 
 <style type="text/css">
   tr {
@@ -73,151 +89,43 @@
 
 {% block extrascripts %}
 <script>
-  $(document).ready(function () {
-    let data_review = [];
-    
-    $("#simpan_data").click(function(){
-      $.ajax({
-        url: `http://127.0.0.1:8000/empty_data`,
-        type: 'GET',
-        success: function(res){
-          console.log("BERHASIL MENGHAPUS DATA");
-        },
-        error: function(err){
-          console.log(err);
-        }
-      })
+  var comment = JSON.parse(document.getElementById('comment-data').textContent);
+  console.log(comment);
+  var label = JSON.parse(document.getElementById('label-data').textContent);
+  console.log(label);
+  
+  var status = "{{status|safe}}";
+  
+  if(status){
+    console.log("create table");
+    var clients = [];
 
-      setTimeout(() => {
-        var url = `http://127.0.0.1:8000/insert_review`;
-        $.each(data_review, function (i, val) {  
-          let index_number = '000';
-          if(i.toString().length==1) index_number = '00'+i
-          else if(i.toString().length==2) index_number = '0'+i
-          else index_number = i
-
-          const label = $(`#review${i}`).val();
-          console.log(label);
-
-          let final_data = ({
-            'index_number' : index_number,
-            'review': val['review'],
-            'normalisation': val['normalisation'],
-            'label': label,
-            'csrfmiddlewaretoken': '{{csrf_token}}'
-          })
-
-          // console.log(final_data);
-
-          if(true){
-            $.ajax({
-              url: url,
-              type: 'POST',
-              data: final_data,
-              success: function(res){
-                console.log(i + " -> SUCCESS 200");              
-                // console.log(res);
-              },
-              error: function(err){
-                console.log(i+" -> "+err);
-                // console.log(err);
-              }
-            })
-          }
-
-          if(i==data_review.length-1){
-            toastr.success(`Data berhasil disimpan`)
-            location.reload();
-          }
-
-        })
-
-      },1000)
-      
-    });
+    for (let index = 0; index < comment.length; index++) {
+      clients.push({
+        "No": index+1, 
+        "Review": comment[index][0], 
+        "Normalisation": comment[index][0], 
+        "Label": label[index]['class']==1 ? 'Positif' : 'Negatif' })
+    }
 
 
-    $('#table-proses').hide();
 
-    $('#proses').click(() => {      
-      $('#table-proses').show();
-      $('.card-header, .callout').hide();
+    $("#sentimen-table").jsGrid({
+      width: "100%",
+      height: "auto",
 
-      var id = $('#selectProduct').val();
-      var jml = $('#jumlahHalaman').val();
-      id == null ? id=100 : id;
-      jml == null ? jml=1 : jml;
+      sorting: true,
+      paging: true,
 
-      var url = `http://127.0.0.1:8000/getData/getDataReviews/?id=${id}&jumlah=${jml}`;
-    
-      $("#sentimen-table").jsGrid({
-        height: "auto",
-        width: "100%",
- 
-        sorting: true,
-        paging: true,
-        autoload: true,
-        pageSize: 500,
- 
-        controller: {
-          loadData: function() {
-            var d = $.Deferred();
- 
-            $.ajax({
-                url: url,
-                dataType: "json"
-            }).done(function(response) {
-                d.resolve(response)
-            });
+      data: clients,
 
-            return d.promise().then(x => {
-              $("#nama_produk").html(`Nama Produk : ${x[0]['nama_product']} <a href='${x[0]['url']}' target='_blank'>  <i class='fas fa-external-link-alt'></i></a>`)
-              $("#kategori").text("Kategori : "+x[0]['kategori'])
-              console.log(x);
-              var p = [];
-              // labels = x[0]['review']['training_data'];
-
-              $.each(x[0]['review']['comment'], function(i, xyz){
-                p.push({
-                  No: (i+1),
-                  Review: xyz[0],
-                  Normalisation: xyz[1],
-                  Label: `
-                  <div class="form-group">
-                    <label>Kelas</label>
-                    <select class="form-control select2 label-value" id="review${i}" style="width: 100%;">
-                      <option selected="selected" value="1">Positif</option>
-                      <option value="0">Negatif</option>
-                    </select>
-                  </div>
-                  `
-                  // Label: labels[i]['class'] ? 'Positif' : 'Negatif'
-                })
-
-                data_review.push({
-                  'review': xyz[0],
-                  'normalisation': xyz[1],
-                  'label': 1
-                })
-              })
-        
-              $('.card-header, .callout').show();
-
-              return p
-            });
-
-          }
-        },
- 
-        fields: [
+      fields: [
           { name: "No", type: "number", width: 20 },
           { name: "Review", type: "text", width: 150 },
           { name: "Normalisation", type: "text", width: 150 },
-          { name: "Label", type: "text", width: 50 }
-        ]
-      });
-
+          { name: "Label", type: "text", width: 30 }
+      ]
     });
-  });
+  };
 </script>
 {% endblock extrascripts %}

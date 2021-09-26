@@ -9,10 +9,10 @@ from rest_framework.decorators import api_view
 from django_filters.rest_framework import DjangoFilterBackend
 from django.core.files.storage import FileSystemStorage
 
-
+import pandas as pd
 # Create your views here.
 def index(request):
-    data_latih_jumlah = DataLat.objects.all().count()
+    data_latih_jumlah = TbData.objects.all().count()
     kata_dasar_jumlah = TbKatadasar.objects.all().count()
     product_jumlah = TbProduct.objects.all().count()
     kata_sentimen_jumlah = TbSentimen.objects.all().count()
@@ -36,10 +36,21 @@ def sentimen(request):
     return render(request, 'sentimen.html', context)
 
 def uji_svm(request):
-    data = TbData.objects.all().order_by('index_number')
+    dbdata = TbData.objects.all().order_by('index_number').values()
 
+    data = the_function(dbdata, 'from_db')
+    
     context = {
-        'data' : data
+        'status': True,
+        'comment' : data['comment'],
+        # 'sentimen': data['sentimen'],
+        # 'query': data['query'],
+        # 'tf': data['tf'],
+        # 'df': data['df'],
+        # 'idf': data['idf'],
+        # 'tfidf': data['tfidf'],
+        # 'prepare_data': data['prepare_data'],
+        'label': data['training_data']
     }
 
     return render(request, 'uji_svm.html', context)
@@ -52,7 +63,7 @@ def sentimen_manual(request):
         uploaded_file_url = fs.url(filename)
         print('Filename: ', uploaded_file_url)
         
-        data = the_function(uploaded_file_url)
+        data = the_function(uploaded_file_url, 'manual')
         
         context = {
             'status': True,

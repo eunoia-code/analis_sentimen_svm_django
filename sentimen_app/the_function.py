@@ -202,39 +202,70 @@ class the_function:
     def sortList(e):
         return e['index']
 
-    def __new__(self, data):
+    def __new__(self, data, tipe):
         review = []
         sentimen = []
         tf = []
         df = []
         idf = []
         tfidf = []
-
+        # training_data = []
 
         query = self.CreateQuery()
-        df = pd.read_csv(data) 
-        total_row = df.No
-        # n = len(total_row)
-        n=5
-        
-        for index, row in df.iterrows():
-            if index < 5:
-                print("Proses Ke-"+str(index+1))
+
+        if tipe=='from_db':
+            total_row = len(data)
+            n = total_row
+            # n=5
+            for index, row in enumerate(data):
+                if index < n:
+                    print("Proses Ke-"+str(index+1))
+                    review.append([row['review'], row['normalisation']])
+
+                    TFS = self.ComputeTF(query, row['normalisation'], index)
+                    tf.append(TFS)
+
+                    tempLabel = ''
+                    print(row['label'])
+                    if row['label'] == '1':
+                        tempLabel = 'positif'
+                    else:
+                        tempLabel = 'negatif'
+
+                    sentimen.append(tempLabel)
                 
-                newText = self.PreprocessingFunction(self, row['Review'])
-                review.append([row['Review'], newText])
+            print(sentimen)
+            df = self.ComputeDF(query, tf, n)
+            idf = self.ComputeIDF(query, df, n)
+            tfidf = self.ComputeTFIDF(tf, idf)
+            prepare_data = self.PrepareData(query, tfidf, sentimen)
+            training_data = self.TrainingData(prepare_data)
 
-                TFS = self.ComputeTF(query, newText, index)
 
-                tf.append(TFS)
-                sentimen.append(row['Sentimen'])
+        if tipe=='manual':
+            df = pd.read_csv(data) 
+            total_row = df.No
+            n = len(total_row)
+            # n=5
+            
+            for index, row in df.iterrows():
+                if index < n:
+                    print("Proses Ke-"+str(index+1))
+                    
+                    newText = self.PreprocessingFunction(self, row['Review'])
+                    review.append([row['Review'], newText])
 
-        df = self.ComputeDF(query, tf, n)
-        idf = self.ComputeIDF(query, df, n)
-        tfidf = self.ComputeTFIDF(tf, idf)
+                    TFS = self.ComputeTF(query, newText, index)
 
-        prepare_data = self.PrepareData(query, tfidf, sentimen)
-        training_data = self.TrainingData(prepare_data)
+                    tf.append(TFS)
+                    sentimen.append(row['Sentimen'])
+
+            df = self.ComputeDF(query, tf, n)
+            idf = self.ComputeIDF(query, df, n)
+            tfidf = self.ComputeTFIDF(tf, idf)
+
+            prepare_data = self.PrepareData(query, tfidf, sentimen)
+            training_data = self.TrainingData(prepare_data)
         
         return {
             'comment': review,

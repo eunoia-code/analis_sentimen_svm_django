@@ -45,7 +45,7 @@ class ProductSerializer(serializers.HyperlinkedModelSerializer):
 
             for index, el in enumerate(soup.find_all("p", {"class": "text-content"})):
                 if index < n:
-                    print("Proses ke-"+str(index))
+                    print("Halaman ke-"+str(i+1)+", komentar ke-"+str(index))
                     
                     newText = self.PreprocessingFunction(el.text)
 
