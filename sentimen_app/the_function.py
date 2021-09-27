@@ -269,12 +269,12 @@ class the_function:
         
         return {
             'comment': review,
-            # 'sentimen': sentimen,
-            # 'query': query,
-            # 'tf': tf,
-            # 'df': df,
-            # 'idf': idf,
-            # 'tfidf': tfidf,
-            # 'prepare_data': prepare_data,
+            'sentimen': sentimen,
+            'query': query,
+            'tf': tf,
+            'df': df,
+            'idf': idf,
+            'tfidf': tfidf,
+            'prepare_data': prepare_data,
             'training_data': training_data
         }

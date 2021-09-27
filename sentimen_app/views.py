@@ -43,13 +43,13 @@ def uji_svm(request):
     context = {
         'status': True,
         'comment' : data['comment'],
-        # 'sentimen': data['sentimen'],
-        # 'query': data['query'],
-        # 'tf': data['tf'],
-        # 'df': data['df'],
-        # 'idf': data['idf'],
-        # 'tfidf': data['tfidf'],
-        # 'prepare_data': data['prepare_data'],
+        'sentimen': data['sentimen'],
+        'query': data['query'],
+        'tf': data['tf'],
+        'df': data['df'],
+        'idf': data['idf'],
+        'tfidf': data['tfidf'],
+        'prepare_data': data['prepare_data'],
         'label': data['training_data']
     }
 
