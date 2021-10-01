@@ -39,7 +39,7 @@ def uji_svm(request):
     dbdata = TbData.objects.all().order_by('index_number').values()
 
     data = the_function(dbdata, 'from_db')
-    
+    print(type(data['idf']))
     context = {
         'status': True,
         'comment' : data['comment'],

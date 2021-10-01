@@ -39,10 +39,17 @@
         </div>
         <!-- /.card-header -->
         
-        <!-- contoh pengujian, ganti variabel yang ingin ditampilkan -->
+        <!-- contoh pengujian untuk df dan idf, ganti variabel yang ingin ditampilkan -->
         <pre id="tfidf">
-          {% for i in label %} 
-            {{i}}
+          {% for key, value in idf.items %} 
+            {{key}} -> {{value}}
+          {% endfor %}
+        </pre>
+
+        <!-- contoh pengujian untuk tf dan tfidf, ganti variabel yang ingin ditampilkan -->
+        <pre id="tfidf">
+          {% for value in idf %} 
+            {{value}}
           {% endfor %}
         </pre>
 

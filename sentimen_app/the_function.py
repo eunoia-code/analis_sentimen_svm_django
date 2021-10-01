@@ -226,7 +226,6 @@ class the_function:
                     tf.append(TFS)
 
                     tempLabel = ''
-                    print(row['label'])
                     if row['label'] == '1':
                         tempLabel = 'positif'
                     else:
@@ -234,7 +233,6 @@ class the_function:
 
                     sentimen.append(tempLabel)
                 
-            print(sentimen)
             df = self.ComputeDF(query, tf, n)
             idf = self.ComputeIDF(query, df, n)
             tfidf = self.ComputeTFIDF(tf, idf)
@@ -266,7 +264,7 @@ class the_function:
 
             prepare_data = self.PrepareData(query, tfidf, sentimen)
             training_data = self.TrainingData(prepare_data)
-        
+
         return {
             'comment': review,
             'sentimen': sentimen,
